@@ -1,9 +1,9 @@
 #include <demo.hpp>
 
+
 Player::Player(std::string &data): packetRef(0)
 {
 	memcpy(this, &data[0], sizeof(md));
-
 	md.version = bswap_64(md.version);
 	md.xUid = bswap_64(md.xUid);
 	md.userId = bswap_32(md.userId);
@@ -16,7 +16,7 @@ void DemoFile::addPlayer(Player &p, int idx)
 	players[idx] = p;
 }
 
-const std::unordered_map<int, Player>	&DemoFile::getPlayers()
+std::unordered_map<int, Player>	&DemoFile::getPlayers()
 {
 	return players;
 }
@@ -26,13 +26,11 @@ Player	&DemoFile::getPlayer(size_t idx)
 	return players[idx];
 }
 
-const GameEntities::Property *Player::getProperty(std::string name) const
+const GameEntities::Property *Player::getProperty(std::string name)
 {
     static std::unordered_map<std::string, int>propHm;
-
     if (!packetRef)
         return 0;
-
     std::unordered_map<std::string, int>::iterator foundItem = propHm.find(name);
 
     if (foundItem == propHm.end()){
@@ -45,7 +43,7 @@ const GameEntities::Property *Player::getProperty(std::string name) const
         }
     }else{
         int inx = foundItem->second;
-        if (packetRef->properties[inx].first && name == *packetRef->properties[inx].first){
+		if (packetRef->properties[inx].first && name == *packetRef->properties[inx].first){
             return &packetRef->properties[inx].second;
         }
     }

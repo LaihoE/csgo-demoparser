@@ -260,9 +260,8 @@ struct Player {
 	};
 	
 	Metadata	md;
-	std::unordered_map<std::string, int> propHm;
 	GameEntities::Entity *packetRef;
-	const GameEntities::Property *getProperty(std::string name, DemoFile &dr);
+	const GameEntities::Property *getProperty(std::string name);
 	Player(std::string &data);
 	Player(): packetRef(0) {}
 	Player(const Player &p): packetRef(0) {*this = p;}
@@ -292,7 +291,6 @@ private:
 	void handleUserMessage(UserMessage &e);
 	void handleSendTable(SendTable &st);
 public:
-	std::unordered_map<std::string, int>propHm;
 	DemHeader header;
 	size_t totalparse;
 	DataTable	&getDataTable() { return dataTable; }

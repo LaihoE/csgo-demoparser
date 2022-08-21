@@ -16,7 +16,7 @@ void DemoFile::start_parse(FileReader &f)
 
 	while (!isFinished)
 	{
-		Frame(f, isFinished, *this);
+		this->tick = Frame(f, isFinished, *this).tick;
 	}
 }
 

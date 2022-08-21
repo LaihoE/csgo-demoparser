@@ -16,7 +16,7 @@ build: $(CFILES) $(HFILES) $(OFILES)
 	$(CC) $(FLAGS) $<
 
 %.o : %.pb.cc
-	$(CLANG) $(CFLAGS) -c $< -o $@
+	$(CLANG) $(CFLAGS) -c $< -fPIC -o $@
 
 
 test:

@@ -10,9 +10,7 @@ Frame::Frame(FileReader &f, bool &finished, DemoFile &d)
 	f.read(&cmd, sizeof(cmd));
 	f.read(&tick, sizeof(tick));
 	f.read(&playerslot, sizeof(playerslot));
-
-	assert( cmd >= 1 && cmd <= dem_lastcmd );
-
+	int fseekSize = 0;
 	switch (cmd)
 	{
 		case dem_signon:
@@ -38,10 +36,12 @@ Frame::Frame(FileReader &f, bool &finished, DemoFile &d)
 			break;
 		}
 		case dem_stringtables:
-			assert(0);
+			f.read(&fseekSize, sizeof(fseekSize));
+			f.ForceIncrement(fseekSize);
 			break;
 		case dem_usercmd:
-			assert(0);
+			f.read(&fseekSize, sizeof(fseekSize));
+			f.ForceIncrement(fseekSize);
 			break;
 		case dem_synctick:
 		default:

@@ -10,12 +10,12 @@ void printdecTime()
 inline void	DecodeArray(StreamReader &sr, const PropW &flatProp, GameEntities::Entity &ent, int &ind)
 {
 	int maxElem = flatProp.prop->num_elements();
-
+	
 	int bitsToRead = 1;
 	while (maxElem >>= 1)
 		bitsToRead++;
 	int numElem = sr.readBits(bitsToRead);
-
+	
 	PropW &newProp = ent.parentService->arProps[flatProp.targetElem];
 	GameEntities::Property toAdd;
 	GameEntities::Property &prop = ent.properties[ind].second;
@@ -181,7 +181,6 @@ void	readFromStream(StreamReader &sr, GameEntities::Entity &ent)
 DataTable::ServiceClass	*PVSParser(StreamReader &sr, DataTable &dt)
 {
 	int serverClassId = sr.readBits(dt.serviceClassBits);
-
 	sr.readBits(10);
 
 	assert(serverClassId < dt.services.size());
@@ -210,8 +209,8 @@ void GameEntities::parse(PacketEntities &pe, DataTable &dt, DemoFile &df)
 	{
 		currentEntity += 1 + sr.readStreamInt();
 
-		if (currentEntity >= props.size())
-			props.resize((currentEntity + 2) * 2);
+		assert(currentEntity < 5000);
+
 		Entity	&toChange = props[currentEntity];
 
 		int type = sr.readBits(2);
@@ -226,7 +225,6 @@ void GameEntities::parse(PacketEntities &pe, DataTable &dt, DemoFile &df)
 			}
 		case 2:		// create
 			{
-
 				if (toChange.parentService != 0)
 				{
 					deleteFromIndex(indexes, currentEntity, toChange.parentService->nameDataTable);
@@ -242,13 +240,17 @@ void GameEntities::parse(PacketEntities &pe, DataTable &dt, DemoFile &df)
 				{
 					df.getPlayer(currentEntity - 1).packetRef = &(props[currentEntity]);
 				}
-
 				df.emitEvent(svc_CreateEntity, &toChange);
 				break;
 			}
 		default:	// delete
 			{
 				df.emitEvent(svc_DeleteEntity, &toChange);
+
+				if (toChange.parentService->nameDataTable == "DT_CSPlayer")
+				{
+					df.getPlayer(currentEntity - 1).packetRef = 0;
+				}
 
 				deleteFromIndex(indexes, currentEntity, toChange.parentService->nameDataTable);
 				toChange.properties.clear();
@@ -260,7 +262,7 @@ void GameEntities::parse(PacketEntities &pe, DataTable &dt, DemoFile &df)
 }
 
 GameEntities::GameEntities() {
-	props.resize(512);
+	props.resize(5000);
 }
 
 GameEntities::Property::~Property()
@@ -292,6 +294,7 @@ const GameEntities::Property *GameEntities::Entity::getProperty(std::string name
 {
 	if (!parentService)
 		return 0;
+		
 	for (size_t i = 0; i < properties.size(); i++)
 	{
 		if (properties[i].first && name == *properties[i].first)

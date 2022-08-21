@@ -1,7 +1,7 @@
 NAME=democheck.a
 NAME_EXEC=democheck
 CC=clang++
-FLAGS= -std=c++2a -Ofast -march=native
+FLAGS= -std=c++2a -Ofast -march=native -fPIC
 LINKFLAGS=-lprotobuf -lpthread
 DEBUG_FLAGS=-g -fsanitize=address
 LIBS=-I inc/ -I startup-parser/src -I protobuf/
