@@ -2,7 +2,6 @@
 #define DEMFILE_HPP
 
 #include <vector>
-#include <deque>
 #include <stdio.h>
 #include <exception>
 #include <netmessages.pb.h>
@@ -221,12 +220,11 @@ class GameEntities
 
 			const GameEntities::Property *getProperty(std::string name) const;
 			Entity(): parentService(0) {}
-			Entity(const Entity &s): parentService(0) {*this = s;}
 			Entity			&operator=(const Entity &s);
 			void UpdateEntity(Entity &s);
 		};
 	private:
-		std::deque<Entity>							props;
+		std::vector<Entity>							props;
 		std::unordered_multimap<std::string, int>	indexes;
 
 	public:
@@ -234,12 +232,7 @@ class GameEntities
 							std::unordered_multimap<std::string, int>::iterator> \
 							getEntitiesByName(std::string name) {return indexes.equal_range(name);}
 		inline	const std::unordered_multimap<std::string, int>	getEntities() {return indexes;}
-		inline	const Entity *getEntity(int id)
-		{
-			if (id > props.size())
-				return 0;
-			return &props[id];
-		}
+		inline	const Entity &getEntity(int id) {return props[id];}
 
 		GameEntities();
 		void	parse(PacketEntities &pe, DataTable &dt, DemoFile &df);
@@ -265,14 +258,14 @@ struct Player {
 		int		customFiles[4];
 		unsigned char	filesDownloaded;
 	};
-
+	
 	Metadata	md;
+	std::unordered_map<std::string, int> propHm;
 	GameEntities::Entity *packetRef;
-
-	const GameEntities::Property *getProperty(std::string name) const;
+	const GameEntities::Property *getProperty(std::string name, DemoFile &dr);
 	Player(std::string &data);
-	Player() {}
-	Player(const Player &p) {*this = p;}
+	Player(): packetRef(0) {}
+	Player(const Player &p): packetRef(0) {*this = p;}
 	Player &operator=(const Player &p);
 };
 std::ostream &operator<<(std::ostream &o, const Player &p);
@@ -280,7 +273,7 @@ std::ostream &operator<<(std::ostream &o, const Player &p);
 class DemoFile
 {
 private:
-	DemHeader header;
+	
 	ServerInfo *info;
 	std::vector<GameEventList_descriptor_t> gEvents;
 	std::vector<ParsedStringTable>			parsedTables;
@@ -288,6 +281,7 @@ private:
 	DataTable							dataTable;
 	GameEntities						entities;
 	std::vector<std::function<void (void *)>>		eventHooks;
+	
 
 	void handleGameEventList(GameEventList &ge);
 	void handleGameEvent(GameEvent &ge);
@@ -298,6 +292,8 @@ private:
 	void handleUserMessage(UserMessage &e);
 	void handleSendTable(SendTable &st);
 public:
+	std::unordered_map<std::string, int>propHm;
+	DemHeader header;
 	size_t totalparse;
 	DataTable	&getDataTable() { return dataTable; }
 	void handleDataTable();
@@ -307,14 +303,14 @@ public:
 
 	void	start_parse(FileReader &f);
 	void	handle_packet(int type, void *data);
-
+	int tick;
 	void	addPlayer(Player &p, int idx);
-	const	std::unordered_map<int, Player> &getPlayers();
+	std::unordered_map<int, Player> &getPlayers();
 	inline	std::pair	<std::unordered_multimap<std::string, int>::iterator, \
 						std::unordered_multimap<std::string, int>::iterator> \
 						getEntitiesByName(std::string name) {return entities.getEntitiesByName(name);}
 	inline	const std::unordered_multimap<std::string, int>	getEntities() {return entities.getEntities();}
-	inline	const GameEntities::Entity *getEntity(int id) {return entities.getEntity(id);}
+	inline	const GameEntities::Entity &getEntity(int id) {return entities.getEntity(id);}
 
 	Player &getPlayer(size_t idx);
 
